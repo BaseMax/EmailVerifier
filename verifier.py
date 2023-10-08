@@ -2,6 +2,7 @@ import re
 import smtplib
 from email.utils import parseaddr
 from verify_email import verify_email
+from email_validator import validate_email, EmailNotValidError, caching_resolver
 
 def is_valid_email(email):
     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -31,10 +32,10 @@ def check_email_exists(server, email):
         print(f"Error: {str(e)}")
     return False
 
-from email_validator import validate_email, EmailNotValidError
-
 def verify_and_check_emails(input_file, output_file):
     verified_emails = []
+
+    resolver = caching_resolver(timeout=10)
 
     with open(input_file, 'r', encoding='utf-8') as file:
         lines = file.readlines()
@@ -48,7 +49,7 @@ def verify_and_check_emails(input_file, output_file):
                 #     verified_emails.append(line)
 
                 try:
-                  emailinfo = validate_email(line, check_deliverability=True)
+                  emailinfo = validate_email(line, dns_resolver=resolver, test_environment=False, allow_empty_local=False, check_deliverability=True)
                   line = emailinfo.normalized
                   verified_emails.append(line)
                 except EmailNotValidError as e:
