@@ -1,6 +1,7 @@
 import re
 import smtplib
 from email.utils import parseaddr
+from verify_email import verify_email
 
 def is_valid_email(email):
     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -30,25 +31,25 @@ def check_email_exists(server, email):
         print(f"Error: {str(e)}")
     return False
 
-def verify_and_check_emails(input_file, output_file, server):
+def verify_and_check_emails(input_file, output_file):
     verified_emails = []
 
-    with open(input_file, 'r') as file:
+    with open(input_file, 'r', encoding='utf-8') as file:
         lines = file.readlines()
         for line in lines:
             line = line.strip()
-            if is_valid_email(line) and check_email_exists(server, line):
+            # if is_valid_email(line) and check_email_exists(server, line):
+            if is_valid_email(line) and verify_email(line):
                 verified_emails.append(line)
 
-    with open(output_file, 'w') as file:
+    with open(output_file, 'w', encoding='utf-8') as file:
         for email in verified_emails:
             file.write(email + '\n')
 
 if __name__ == "__main__":
     input_file = input("Enter the path to the input file: ")
     output_file = input("Enter the path to the output file: ")
-    server = input("Enter the SMTP server address (e.g., smtp.example.com): ")
 
-    verify_and_check_emails(input_file, output_file, server)
+    verify_and_check_emails(input_file, output_file)
 
     print("Email verification completed. Verified emails saved to", output_file)
