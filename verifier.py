@@ -1,31 +1,34 @@
 import re
-import telnetlib
+import smtplib
+from email.utils import parseaddr
 
 def is_valid_email(email):
-    email_pattern = r'^[a-zA-Z0-9._%+-]+v[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(email_pattern, email)
 
 def check_email_exists(server, email):
     try:
-        tn = telnetlib.Telnet(server, 25, timeout=5)
-        response = tn.read_until(b'220', timeout=5)
-        tn.write(b'HELO example.com\r\n')
-        response = tn.read_until(b'250', timeout=5)
+        username, domain = parseaddr(email)
+        if not domain:
+            return False
 
-        tn.write(b'MAIL FROM:<example@example.com>\r\n')
-        response = tn.read_until(b'250', timeout=5)
+        with smtplib.SMTP(server) as smtp:
+            code, message = smtp.helo()
 
-        tn.write(f'RCPT TO:<{email}>\r\n'.encode('utf-8'))
-        response = tn.read_until(b'250', timeout=5)
+            if code != 250:
+                return False
 
-        tn.write(b'QUIT\r\n')
-        tn.close()
+            code, message = smtp.mail("example@example.com")
+            if code != 250:
+                return False
 
-        return "250" in response.decode('utf-8')
+            code, message = smtp.rcpt(email)
+            if code == 250:
+                return True
 
     except Exception as e:
         print(f"Error: {str(e)}")
-        return False
+    return False
 
 def verify_and_check_emails(input_file, output_file, server):
     verified_emails = []
