@@ -12,7 +12,7 @@ def check_email_exists(server, email):
         if not domain:
             return False
 
-        with smtplib.SMTP(server) as smtp:
+        with smtplib.SMTP(server, timeout=10) as smtp:
             code, message = smtp.helo()
 
             if code != 250:
