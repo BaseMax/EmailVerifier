@@ -31,6 +31,8 @@ def check_email_exists(server, email):
         print(f"Error: {str(e)}")
     return False
 
+from email_validator import validate_email, EmailNotValidError
+
 def verify_and_check_emails(input_file, output_file):
     verified_emails = []
 
@@ -38,9 +40,19 @@ def verify_and_check_emails(input_file, output_file):
         lines = file.readlines()
         for line in lines:
             line = line.strip()
-            # if is_valid_email(line) and check_email_exists(server, line):
-            if is_valid_email(line) and verify_email(line):
-                verified_emails.append(line)
+            if is_valid_email(line):
+                # if check_email_exists(line):
+                #     verified_emails.append(line)
+
+                # if verify_email(line):
+                #     verified_emails.append(line)
+
+                try:
+                  emailinfo = validate_email(line, check_deliverability=False)
+                  line = emailinfo.normalized
+                  verified_emails.append(line)
+                except EmailNotValidError as e:
+                  print(str(e))
 
     with open(output_file, 'w', encoding='utf-8') as file:
         for email in verified_emails:
