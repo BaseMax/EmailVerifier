@@ -48,7 +48,7 @@ def verify_and_check_emails(input_file, output_file):
                 #     verified_emails.append(line)
 
                 try:
-                  emailinfo = validate_email(line, check_deliverability=False)
+                  emailinfo = validate_email(line, check_deliverability=True)
                   line = emailinfo.normalized
                   verified_emails.append(line)
                 except EmailNotValidError as e:
